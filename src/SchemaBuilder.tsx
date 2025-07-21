@@ -38,17 +38,22 @@ const fieldTypeOptions = [
 ];
 
 const FieldRow: React.FC<{
-  nestIndex: number;
+  nestPath: string;
   control: any;
   register: any;
   remove: (index: number) => void;
   fields: any[];
   field: any;
   index: number;
-}> = ({ nestIndex, control, register, remove, fields, field, index }) => {
-  const { fields: childFields, append, remove: removeChild } = useFieldArray({
+}> = ({ nestPath, control, register, remove, fields, field, index }) => {
+  const currentPath = `${nestPath}[${index}]`;
+  const {
+    fields: childFields,
+    append: appendChild,
+    remove: removeChild,
+  } = useFieldArray({
     control,
-    name: `fields.${index}.children`,
+    name: `${currentPath}.children`,
   });
 
   return (
@@ -65,12 +70,12 @@ const FieldRow: React.FC<{
         <Space wrap align="baseline">
           <Input
             placeholder="Field Name"
-            {...register(`fields.${index}.name` as const)}
+            {...register(`${currentPath}.name` as const)}
             style={{ width: 220 }}
           />
           <Controller
             control={control}
-            name={`fields.${index}.type`}
+            name={`${currentPath}.type`}
             render={({ field }) => (
               <Select
                 {...field}
@@ -98,7 +103,7 @@ const FieldRow: React.FC<{
             {childFields.map((child, childIndex) => (
               <FieldRow
                 key={child.id}
-                nestIndex={childIndex}
+                nestPath={`${currentPath}.children`}
                 control={control}
                 register={register}
                 remove={removeChild}
@@ -111,7 +116,7 @@ const FieldRow: React.FC<{
               type="dashed"
               icon={<PlusOutlined />}
               onClick={() =>
-                append({
+                appendChild({
                   name: '',
                   type: 'String',
                 })
@@ -165,7 +170,7 @@ const SchemaBuilder: React.FC = () => {
         {fields.map((field, index) => (
           <FieldRow
             key={field.id}
-            nestIndex={index}
+            nestPath="fields"
             control={control}
             register={register}
             remove={remove}
